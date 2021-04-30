@@ -1,0 +1,2 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.rainmanhhh.github.ez.jooq.EzJooqAutoConfig
