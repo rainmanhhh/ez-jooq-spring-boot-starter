@@ -1,4 +1,4 @@
-package com.rainmanhhh.github.ez.jooq
+package ez.jooq
 
 import org.jooq.*
 import org.jooq.impl.DSL
