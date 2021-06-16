@@ -10,10 +10,10 @@ import org.springframework.context.annotation.Import
 @Import(JooqAutoConfiguration::class)
 @AutoConfigureAfter(JooqAutoConfiguration::class)
 @Configuration
-open class EzJooqAutoConfig {
+class EzJooqAutoConfig {
   @ConditionalOnMissingBean(Jooq::class)
   @Bean
-  open fun jooq(jooqConf: JooqConf): Jooq {
+  fun jooq(jooqConf: JooqConf): Jooq {
     return Jooq(jooqConf)
   }
 }
