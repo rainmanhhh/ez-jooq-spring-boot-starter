@@ -1,7 +1,6 @@
 package ez.jooq
 
 import org.jooq.*
-import org.jooq.impl.DSL
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDateTime
@@ -14,23 +13,30 @@ fun <RECORD : Record, POJO : Any> RECORD.mapBy(mapper: RecordMapper<RECORD, POJO
   return mapper.map(this)
 }
 
-class Jooq(private val conf: JooqConf) {
-  private val dsl get() = DSL.using(conf)
+class Jooq(private val dsl: () -> DSLContext) {
+  constructor(conf: JooqConf) : this(conf::dsl)
 
   fun <R : Record> selectFrom(t: Table<R>): JooqWhereStep<R> {
-    return JooqWhereStep(dsl.selectFrom(t))
+    return JooqWhereStep(dsl().selectFrom(t))
   }
 
   fun <R : Record> insertInto(t: Table<R>): InsertSetStep<R> {
-    return dsl.insertInto(t)
+    return dsl().insertInto(t)
   }
 
   fun <R : Record> update(t: Table<R>): UpdateSetFirstStep<R> {
-    return dsl.update(t)
+    return dsl().update(t)
   }
 
   fun <R : Record> deleteFrom(t: Table<R>): DeleteUsingStep<R> {
-    return dsl.deleteFrom(t)
+    return dsl().deleteFrom(t)
+  }
+
+  fun tx(transactional: (jooq: Jooq) -> Unit) {
+    dsl().transaction(TransactionalRunnable {
+      val j = Jooq(it)
+      transactional(j)
+    })
   }
 }
 
