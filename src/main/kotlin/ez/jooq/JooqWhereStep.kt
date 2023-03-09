@@ -5,7 +5,7 @@ import org.jooq.Record
 import org.jooq.SelectConditionStep
 import org.jooq.SelectWhereStep
 
-class JooqWhereStep<R : Record>(
+class JooqWhereStep<R : Record?>(
   private val step: SelectWhereStep<R>
 ) {
   /**
