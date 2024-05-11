@@ -8,7 +8,7 @@ class Jooq(private val dsl: () -> DSLContext) {
 
   fun context() = dsl()
 
-  fun <R : Record?> newRecord(t: Table<R>) = dsl().newRecord(t)!!
+  fun <R : Record?> newRecord(t: Table<R>) = dsl().newRecord(t)
 
   fun <R : Record?> selectFrom(t: Table<R>): JooqWhereStep<R> {
     return JooqWhereStep(dsl().selectFrom(t))
