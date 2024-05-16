@@ -3,15 +3,15 @@ package ez.jooq
 import org.jooq.*
 import kotlin.Long
 
-@Suppress("MemberVisibilityCanBePrivate")
-data class PaginateHelper<R : Record>(
+@Suppress("MemberVisibilityCanBePrivate", "unused")
+data class PaginateSqls<R : Record>(
   val countSql: SelectJoinStep<Record1<Int>>,
   val fetchSql: SelectForUpdateStep<R>
 ) : Attachable {
   /**
    * run countSql and fetchSql to get total count and data list. example:
    * ```
-   * val page = paginateHelper.exec {
+   * val page = paginateSqls.exec {
    *   Page(count = it, list = fetchInto(MyPojo::class.java))
    * }
    * ```
@@ -24,7 +24,7 @@ data class PaginateHelper<R : Record>(
   /**
    * run countSql to get total count. example:
    * ```
-   * val totalCount: Long = paginateHelper.count()
+   * val totalCount: Long = paginateSqls.count()
    * ```
    */
   fun count() = countSql.fetchOneInto(Long::class.java)!!
@@ -32,7 +32,7 @@ data class PaginateHelper<R : Record>(
   /**
    * run fetchSql to get data list. example:
    * ```
-   * val list: List<MyPojo> = paginateHelper.fetch { fetchInto(MyPojo::class.java) }
+   * val list: List<MyPojo> = paginateSqls.fetch { fetchInto(MyPojo::class.java) }
    * ```
    */
   fun <Result> fetch(fetchAction: SelectForUpdateStep<R>.() -> Result) = fetchSql.fetchAction()

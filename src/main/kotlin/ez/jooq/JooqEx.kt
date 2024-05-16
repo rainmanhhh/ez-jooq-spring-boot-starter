@@ -15,14 +15,14 @@ fun <A : Attachable?> (A & Any).attach(jooq: Jooq) =
   apply { attach(jooq.context().configuration()) }
 
 /**
- * create a [PaginateHelper]
+ * create a [PaginateSqls]
  * @param pageNo 1-based page number
  * @param pageSize page size
  */
 fun <R : Record> SelectLimitStep<R>.paginate(
   pageNo: Int,
   pageSize: Int
-) = PaginateHelper(
+) = PaginateSqls(
   DSL.selectCount().from(this),
   limit(pageSize).offset((pageNo - 1) * pageSize)
 ).also {
