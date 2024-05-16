@@ -34,3 +34,16 @@ fun <R : Record, Result> SelectLimitStep<R>.paginate(
   val count = ctx.dsl().selectCount().from(this).fetchOneInto(Long::class.java)!!
   return limit(pageSize).offset((pageNo - 1) * pageSize).fetchAction(count)
 }
+
+/**
+ * [UpdatableRecord.insert] or [UpdatableRecord.store] will not return generated fields.
+ * use this method to insert and return the generated fields. example:
+ * ```
+ * jooq.newRecord(t).apply {
+ *   // change some fields
+ * }.insertReturning().fetchOneInto(MyPojo::class.java)
+ * ```
+ */
+fun <R: UpdatableRecord<R>> UpdatableRecord<R>.insertReturning() {
+  configuration()!!.dsl().insertInto(table).set(this).returning()
+}
