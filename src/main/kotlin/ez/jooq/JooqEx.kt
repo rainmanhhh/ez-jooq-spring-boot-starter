@@ -44,6 +44,5 @@ fun <R : Record, Result> SelectLimitStep<R>.paginate(
  * }.insertReturning().fetchOneInto(MyPojo::class.java)
  * ```
  */
-fun <R: UpdatableRecord<R>> UpdatableRecord<R>.insertReturning() {
+fun <R: UpdatableRecord<R>> UpdatableRecord<R>.insertReturning() =
   configuration()!!.dsl().insertInto(table).set(this).returning()
-}
