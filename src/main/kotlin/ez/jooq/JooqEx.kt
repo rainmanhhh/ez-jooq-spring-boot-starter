@@ -17,7 +17,7 @@ fun <A : Attachable?> (A & Any).attach(jooq: Jooq) =
  * do pagination
  * @param pageNo 1-based page number
  * @param pageSize page size
- * @param finalAction the final action to execute after pagination.
+ * @param fetchAction the action to fetch pagination data.
  *   `this` is [SelectForUpdateStep], `it` is the count. example:
  *   ```
  *   {
@@ -28,9 +28,9 @@ fun <A : Attachable?> (A & Any).attach(jooq: Jooq) =
 fun <R : Record, Result> SelectLimitStep<R>.paginate(
   pageNo: Int,
   pageSize: Int,
-  finalAction: SelectForUpdateStep<R>.(Long) -> Result
+  fetchAction: SelectForUpdateStep<R>.(Long) -> Result
 ): Result {
   val ctx = configuration() ?: throw RuntimeException("can't paginate on sql without jooq context")
   val count = ctx.dsl().selectCount().from(this).fetchOneInto(Long::class.java)!!
-  return limit(pageSize).offset((pageNo - 1) * pageSize).finalAction(count)
+  return limit(pageSize).offset((pageNo - 1) * pageSize).fetchAction(count)
 }
