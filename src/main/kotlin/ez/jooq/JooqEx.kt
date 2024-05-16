@@ -3,15 +3,31 @@
 package ez.jooq
 
 import org.jooq.*
+import org.jooq.impl.DSL
 
 typealias JooqConf = Configuration
 
-fun <RECORD : Record?, POJO : Any> RECORD.mapBy(mapper: RecordMapper<RECORD, POJO>): POJO? {
-  return mapper.map(this)
+fun <RECORD : Record, POJO : Any> RECORD?.mapBy(mapper: RecordMapper<RECORD, POJO>): POJO? {
+  return if (this == null) null else mapper.map(this)
 }
 
 fun <A : Attachable?> (A & Any).attach(jooq: Jooq) =
   apply { attach(jooq.context().configuration()) }
+
+/**
+ * create a [PaginateHelper]
+ * @param pageNo 1-based page number
+ * @param pageSize page size
+ */
+fun <R : Record> SelectLimitStep<R>.paginate(
+  pageNo: Int,
+  pageSize: Int
+) = PaginateHelper(
+  DSL.selectCount().from(this),
+  limit(pageSize).offset((pageNo - 1) * pageSize)
+).also {
+  it.attach(configuration())
+}
 
 /**
  * do pagination
@@ -20,7 +36,7 @@ fun <A : Attachable?> (A & Any).attach(jooq: Jooq) =
  * @param fetchAction the action to fetch pagination data.
  *   `this` is [SelectForUpdateStep], `it` is the count. example:
  *   ```
- *   {
+ *   val page = jooq.selectFrom(t).where(condition).paginate(1, 10) {
  *     Page(count = it, list = fetchInto(MyPojo::class.java))
  *   }
  *   ```
@@ -29,11 +45,7 @@ fun <R : Record, Result> SelectLimitStep<R>.paginate(
   pageNo: Int,
   pageSize: Int,
   fetchAction: SelectForUpdateStep<R>.(Long) -> Result
-): Result {
-  val ctx = configuration() ?: throw RuntimeException("can't paginate on sql without jooq context")
-  val count = ctx.dsl().selectCount().from(this).fetchOneInto(Long::class.java)!!
-  return limit(pageSize).offset((pageNo - 1) * pageSize).fetchAction(count)
-}
+) = paginate(pageNo, pageSize).exec(fetchAction)
 
 /**
  * [UpdatableRecord.insert] or [UpdatableRecord.store] will not return generated fields.
@@ -44,5 +56,5 @@ fun <R : Record, Result> SelectLimitStep<R>.paginate(
  * }.insertReturning().fetchOneInto(MyPojo::class.java)
  * ```
  */
-fun <R: UpdatableRecord<R>> UpdatableRecord<R>.insertReturning() =
+fun <R : UpdatableRecord<R>> UpdatableRecord<R>.insertReturning() =
   configuration()!!.dsl().insertInto(table).set(this).returning()
