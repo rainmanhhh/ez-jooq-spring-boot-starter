@@ -1,25 +1,38 @@
 package ez.jooq
 
 import org.jooq.*
+import org.jooq.impl.DSL
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
 import kotlin.Long
 
 @Suppress("MemberVisibilityCanBePrivate", "unused")
-data class PaginateSqls<R : Record>(
-  val countSql: SelectJoinStep<Record1<Int>>,
-  val fetchSql: SelectForUpdateStep<R>
+/**
+ * @param limitStep the sql to be paginated
+ * @param pageNo 1-based page number
+ * @param pageSize page size
+ */
+class Paginator<R : Record>(
+  limitStep: SelectLimitStep<R>,
+  val pageNo: Int,
+  val pageSize: Int
 ) : Attachable {
+  val countSql: SelectJoinStep<Record1<Int>> = DSL.selectCount().from(limitStep)
+  val fetchSql: SelectForUpdateStep<R> =
+    limitStep.limit(pageSize).offset((pageNo - 1) * pageSize)
+
   /**
    * run countSql and fetchSql to get total count and data list. example:
    * ```
    * val page = paginateSqls.exec {
-   *   Page(count = it, list = fetchInto(MyPojo::class.java))
+   *   fetchInto(MyPojo::class.java)
    * }
    * ```
    * @param fetchAction the action to fetch data list. `this` is [SelectForUpdateStep], `it` is the count
    */
-  fun <Result> exec(fetchAction: SelectForUpdateStep<R>.(Long) -> Result): Result {
-    return fetchSql.fetchAction(count())
-  }
+  fun <Item, Result : List<Item>> exec(fetchAction: SelectForUpdateStep<R>.() -> Result): Page<Item> =
+    PageImpl(fetch(fetchAction), PageRequest.of(pageNo - 1, pageSize), count())
 
   /**
    * run countSql to get total count. example:

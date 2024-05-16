@@ -3,7 +3,6 @@
 package ez.jooq
 
 import org.jooq.*
-import org.jooq.impl.DSL
 
 typealias JooqConf = Configuration
 
@@ -15,19 +14,14 @@ fun <A : Attachable?> (A & Any).attach(jooq: Jooq) =
   apply { attach(jooq.context().configuration()) }
 
 /**
- * create a [PaginateSqls]
+ * create a [Paginator]
  * @param pageNo 1-based page number
  * @param pageSize page size
  */
-fun <R : Record> SelectLimitStep<R>.paginate(
-  pageNo: Int,
-  pageSize: Int
-) = PaginateSqls(
-  DSL.selectCount().from(this),
-  limit(pageSize).offset((pageNo - 1) * pageSize)
-).also {
-  it.attach(configuration())
-}
+fun <R : Record> SelectLimitStep<R>.paginate(pageNo: Int, pageSize: Int) =
+  Paginator(this, pageNo, pageSize).also {
+    it.attach(configuration())
+  }
 
 /**
  * do pagination
@@ -41,10 +35,8 @@ fun <R : Record> SelectLimitStep<R>.paginate(
  *   }
  *   ```
  */
-fun <R : Record, Result> SelectLimitStep<R>.paginate(
-  pageNo: Int,
-  pageSize: Int,
-  fetchAction: SelectForUpdateStep<R>.(Long) -> Result
+fun <R : Record, Item, Result: List<Item>> SelectLimitStep<R>.paginate(
+  pageNo: Int, pageSize: Int, fetchAction: SelectForUpdateStep<R>.() -> Result
 ) = paginate(pageNo, pageSize).exec(fetchAction)
 
 /**
