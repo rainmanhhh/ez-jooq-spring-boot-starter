@@ -20,7 +20,7 @@ class Paginator<R : Record>(
 ) : Attachable {
   val countSql: SelectJoinStep<Record1<Int>> = DSL.selectCount().from(limitStep)
   val fetchSql: SelectForUpdateStep<R> =
-    limitStep.limit(pageSize).offset((pageNo - 1) * pageSize)
+    DSL.selectFrom(limitStep).limit(pageSize).offset((pageNo - 1) * pageSize)
 
   /**
    * run countSql and fetchSql to get total count and data list. example:
