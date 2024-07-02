@@ -23,13 +23,15 @@ class Paginator<R : Record>(
     DSL.selectFrom(limitStep).limit(pageSize).offset((pageNo - 1) * pageSize)
 
   /**
-   * run countSql and fetchSql to get total count and data list. example:
+   * run countSql and fetchSql to get total count and data list,
+   * then convert the result with [fetchAction]. example:
    * ```
    * val page = paginateSqls.exec {
    *   fetchInto(MyPojo::class.java)
    * }
    * ```
-   * @param fetchAction the action to fetch data list. `this` is [SelectForUpdateStep], `it` is the count
+   * @param fetchAction the action to fetch data list:
+   *   `this` is [SelectForUpdateStep]; `it` is the count; result should be data item in Page list
    */
   fun <Item, Result : List<Item>> exec(fetchAction: SelectForUpdateStep<R>.() -> Result): Page<Item> =
     PageImpl(fetch(fetchAction), PageRequest.of(pageNo - 1, pageSize), count())
