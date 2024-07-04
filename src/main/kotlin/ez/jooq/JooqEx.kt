@@ -35,7 +35,7 @@ fun <R : Record> SelectLimitStep<R>.paginate(pageNo: Int, pageSize: Int) =
  * @param fetchAction the function to fetch pagination data:
  *   `this` is [SelectForUpdateStep]; `it` is the count; result should be data item in Page list
  */
-fun <R : Record, Item, Result: List<Item>> SelectLimitStep<R>.paginate(
+fun <R : Record, Item, Result : List<Item>> SelectLimitStep<R>.paginate(
   pageNo: Int, pageSize: Int, fetchAction: SelectForUpdateStep<R>.() -> Result
 ) = paginate(pageNo, pageSize).exec(fetchAction)
 
