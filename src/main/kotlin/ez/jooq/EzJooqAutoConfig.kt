@@ -16,6 +16,10 @@ import org.springframework.context.annotation.Configuration
 @ConfigurationProperties("ez.jooq")
 @Configuration
 class EzJooqAutoConfig {
+  /**
+   * a [DefaultConfigurationCustomizer] will be created to config the [org.jooq.Configuration] bean
+   * @see [org.jooq.Configuration.settings]
+   */
   @NestedConfigurationProperty
   var settings = Settings()
 
